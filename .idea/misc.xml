@@ -3,4 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="quizmanager" />
   </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="quiz" project-jdk-type="Python SDK" />
 </project>

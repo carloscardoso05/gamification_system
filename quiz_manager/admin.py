@@ -7,9 +7,20 @@ from .models import Quiz, Question, Answer
 from .util import cut
 
 
+class AnswerInline(admin.TabularInline):
+    model = Answer
+    extra = 0
+    max_num = 4
+    formfield_overrides = {
+        models.TextField: {
+            'widget': Textarea(attrs={'rows': 3, 'cols': 60}),
+        }
+    }
+
+
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'questions_count', 'is_private', 'created_at', 'updated_at']
+    list_display = ['id', 'title', 'owner', 'questions_count', 'is_private', 'created_at', 'updated_at']
     list_editable = ['title', 'is_private']
 
     def get_queryset(self, request):
@@ -26,6 +37,7 @@ class QuizAdmin(admin.ModelAdmin):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ['id', 'formatted_text', 'difficulty', 'quiz', 'created_at', 'updated_at']
+    inlines = [AnswerInline]
 
     @admin.display(ordering='text', description='Answer text')
     def formatted_text(self, obj: Question) -> str:
@@ -35,7 +47,7 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ['id', 'text', 'is_correct', 'question', 'created_at', 'updated_at']
-    list_editable = ['text', 'is_correct', 'question']
+    list_editable = ['text', 'is_correct']
 
     formfield_overrides = {
         models.TextField: {

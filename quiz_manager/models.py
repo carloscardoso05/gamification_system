@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -11,6 +11,7 @@ class Quiz(models.Model):
         verbose_name = _('Quiz')
         verbose_name_plural = _('Quizzes')
 
+    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     is_private = models.BooleanField(default=False)
@@ -46,22 +47,11 @@ class Question(models.Model):
 
 
 class Answer(models.Model):
-    text = models.TextField(null=False, default='', help_text='Texto da opção de resposta')
-    is_correct = models.BooleanField(default=False)
+    text = models.TextField(null=False, blank=False, default='Answer', help_text='Texto da opção de resposta')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    is_correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return cut(self.text)
-
-    def clean(self):
-        super().clean()
-        if not self.is_correct:
-            if not Answer.objects.filter(question=self.question, is_correct=True).exclude(id=self.id).exists():
-                raise ValidationError("At least one answer must be marked as correct for the question.")
-
-    def save(self, *args, **kwargs):
-        if self.is_correct:
-            Answer.objects.filter(question=self.question).exclude(id=self.id).update(is_correct=False)
-        super().save(*args, **kwargs)
